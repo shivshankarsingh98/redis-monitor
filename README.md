@@ -19,6 +19,7 @@
    ```
 
 5) Set this variable in main.go
+
    already default values are set to:
    ```
    var (
