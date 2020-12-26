@@ -10,19 +10,20 @@ import (
 )
 
 func StreamRedisMetrics(ws *websocket.Conn) {
-	var err error
+	clentAddress := ws.RemoteAddr().String()
+	log.Print("Connected to client: ", clentAddress)
 
 	for {
-
-		redisStats := ExampleClient()
-		b, err1 := json.Marshal(redisStats)
-		if err1 != nil {
-			panic(err)
+		redisStats := GetRedisMetrics()
+		redisStatsJson, marshalErr := json.Marshal(redisStats)
+		if marshalErr != nil {
+			log.Print("Error json marshaling: ",marshalErr)
+			return
 		}
 
-		if err = websocket.Message.Send(ws, string(b)); err != nil {
-			log.Print("Can't send")
-			break
+		if err := websocket.Message.Send(ws, string(redisStatsJson)); err != nil {
+			log.Print("Can't send metrics to clent: ",clentAddress)
+			return
 		}
 		time.Sleep(time.Second*metricFreq)
 	}
@@ -40,13 +41,13 @@ func RenderHomePage(w http.ResponseWriter, r *http.Request) {
 		Time: now.Format("15:04:05"),
 	}
 
-	t, err := template.ParseFiles("./templates/index.html")
+	indexTemplate, err := template.ParseFiles("./templates/index.html")
 	if err != nil {
-		log.Print("template parsing error: ", err)
+		log.Print("Template parsing error: ", err)
 	}
 
-	err = t.Execute(w, HomePageVars)
+	err = indexTemplate.Execute(w, HomePageVars)
 	if err != nil {
-		log.Print("template executing error: ", err)
+		log.Print("Template executing error: ", err)
 	}
 }

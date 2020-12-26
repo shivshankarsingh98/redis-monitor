@@ -29,44 +29,44 @@ func InitializeRedisClent(host, port, password string, metricFrequency time.Dura
 	metricFreq  = metricFrequency
 }
 
-func GetRedisKeyInfo(redisInfoKey string){
-	val, err := RedisDb.Do(Ctx,"info", redisInfoKey).Result()
+func GetRedisKeyInfo(redisInfoKeyName string){
+	infoVal, err := RedisDb.Do(Ctx,"info", redisInfoKeyName).Result()
 	if err != nil {
 		log.Print("Unable get redis info: " + err.Error())
 		return
 	}
 
-	redisKeyInfoArr := []MetricDetails{}
-	metricsNameWithValue := strings.Split(val.(string), "\n")
-	for _, metricNameAndValue := range metricsNameWithValue{
-		splitValues := strings.Split(metricNameAndValue, ":")
+	redisKeyMetrics := []MetricDetails{}
+	metricsList := strings.Split(infoVal.(string), "\n")
+	for _, metricNameWithValue := range metricsList{
+		splitValues := strings.Split(metricNameWithValue, ":")
 		if len(splitValues) == 2 {
 			metricName := strings.TrimSpace(splitValues[0])
 			metricValue := strings.TrimSpace(splitValues[1])
 			metricInfo := metricDescription[metricName]
 
 			metricDetails := MetricDetails{MetricName: metricName, MetricDescription: metricInfo, MetricValue: metricValue}
-			redisKeyInfoArr = append(redisKeyInfoArr, metricDetails)
+			redisKeyMetrics = append(redisKeyMetrics, metricDetails)
 		}
 	}
 
-	redisMetricChannel <- RedisKeyInfo{redisInfoKey,redisKeyInfoArr}
+	redisMetricChannel <- RedisKeyInfo{redisInfoKeyName,redisKeyMetrics}
 }
 
 func processKeys(redisInfoKeys []string) map[string]interface{} {
-
-	redisStats := map[string]interface{}{}
 	for _, redisInfoKey := range redisInfoKeys {
 		go GetRedisKeyInfo(redisInfoKey)
 	}
+
+	redisStats := map[string]interface{}{}
 	for i:=0 ; i<len(redisInfoKeys) ; i ++ {
-		metrics := <- redisMetricChannel
-		redisStats[metrics.KeyName] = metrics.KeyMetrics
+		infoKeyStats := <- redisMetricChannel
+		redisStats[infoKeyStats.KeyName] = infoKeyStats.KeyMetrics
 	}
 	return redisStats
 }
 
-func ExampleClient() map[string]interface{}{
+func GetRedisMetrics() map[string]interface{} {
 	redisInfoKeys := []string{"CPU", "Clients", "Cluster", "Server", "Memory"}
 	redisStats := processKeys(redisInfoKeys)
 	return redisStats

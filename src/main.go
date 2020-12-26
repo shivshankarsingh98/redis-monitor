@@ -9,10 +9,10 @@ import (
 )
 
 var(
-	metricFrequency time.Duration = 1
-	redisHost = "127.0.0.1"
-	redisPort = "6379"
-	password = ""
+	metricFrequency time.Duration = 1  // how frequently the metrics should be published in seconds
+	redisHost = "127.0.0.1"            // ip address of the redis
+	redisPort = "6379"                 // port of the redis
+	password = ""                      // password to connect
 )
 
 
