@@ -9,12 +9,12 @@
 4) Set GOPATH
    ```
    dir=$(PWD)
-   export GOPATH=dir/redis-monitor/
+   export GOPATH=$dir/redis-monitor/
    ```
    
 2) Move to src where main.go is located
    ```
-   cd dir/redis-monitor/src
+   cd $dir/redis-monitor/src
    ```
 
 3) Set this variable in main.go
