@@ -9,7 +9,7 @@
 
 3) Set GOPATH
    ```
-   dir=$(PWD)
+   dir=$(pwd)
    export GOPATH=$dir/redis-monitor/
    ```
    
